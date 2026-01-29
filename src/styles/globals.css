@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@theme {
+    --color-dark-bg: #0f0f1e;
+    --color-dark-secondary: #1a1a2e;
+    --color-dark-accent: #667eea;
+    --color-dark-accent-secondary: #764ba2;
+}
+
+@layer base {
+    html,
+    body {
+        @apply bg-gradient-to-br from-[#0f0f1e] to-[#1a1a2e] text-white;
+    }
+
+    * {
+        @apply box-border;
+    }
+
+    a {
+        @apply no-underline;
+    }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.button {
+    display: inline-block;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #0070f3;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #005bb5;
+}
