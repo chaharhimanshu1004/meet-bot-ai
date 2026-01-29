@@ -1,6 +1,9 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { toast } from "react-hot-toast"
+import { useAuthStore } from "@/store/authStore"
 
 export default function Home() {
     const [isLogin, setIsLogin] = useState(true)
@@ -11,6 +14,9 @@ export default function Home() {
     })
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState("")
+
+    const { login } = useAuthStore()
+    const router = useRouter()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -30,12 +36,15 @@ export default function Home() {
             const data = await response.json()
 
             if (response.ok) {
-                setMessage(data.message)
-                setFormData({ email: "", password: "", name: "" })
+                toast.success(data.message)
+                login(data.user)
+                router.push("/dashboard")
             } else {
+                toast.error(data.error || data.message)
                 setMessage(data.error || data.message)
             }
         } catch (error) {
+            toast.error("An error occurred. Please try again.")
             setMessage("An error occurred. Please try again.")
         } finally {
             setLoading(false)
@@ -69,21 +78,19 @@ export default function Home() {
                     <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-10 shadow-2xl">
                         <div className="flex gap-2 mb-8 bg-white/5 rounded-xl p-2">
                             <button
-                                className={`flex-1 py-3 rounded-lg font-medium transition-all duration-300 ${
-                                    isLogin
-                                        ? "bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white"
-                                        : "text-gray-400"
-                                }`}
+                                className={`flex-1 py-3 rounded-lg font-medium transition-all duration-300 ${isLogin
+                                    ? "bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white"
+                                    : "text-gray-400"
+                                    }`}
                                 onClick={() => setIsLogin(true)}
                             >
                                 Login
                             </button>
                             <button
-                                className={`flex-1 py-3 rounded-lg font-medium transition-all duration-300 ${
-                                    !isLogin
-                                        ? "bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white"
-                                        : "text-gray-400"
-                                }`}
+                                className={`flex-1 py-3 rounded-lg font-medium transition-all duration-300 ${!isLogin
+                                    ? "bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white"
+                                    : "text-gray-400"
+                                    }`}
                                 onClick={() => setIsLogin(false)}
                             >
                                 Sign Up
@@ -145,8 +152,8 @@ export default function Home() {
                                 {loading
                                     ? "Processing..."
                                     : isLogin
-                                      ? "Login"
-                                      : "Sign Up"}
+                                        ? "Login"
+                                        : "Sign Up"}
                             </button>
                         </form>
                     </div>

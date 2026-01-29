@@ -1,4 +1,5 @@
 import "../styles/globals.css"
+import ToastProvider from "@/components/providers/ToastProvider"
 
 export const metadata = {
     title: "MeetBot AI - Intelligent Meeting Recording",
@@ -12,7 +13,10 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en">
-            <body>{children}</body>
+            <body>
+                <ToastProvider />
+                {children}
+            </body>
         </html>
     )
 }
