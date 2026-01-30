@@ -6,21 +6,42 @@ import { motion } from "framer-motion";
 import { LogOut, Video, Search } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
+import { Meeting } from "@prisma/client";
 
 export default function DashboardPage() {
     const router = useRouter();
     const { user, logout, isAuthenticated } = useAuthStore();
     const [meetLink, setMeetLink] = useState("");
     const [loading, setLoading] = useState(false);
+    const [meetings, setMeetings] = useState<Meeting[]>([]);
+    const [loadingMeetings, setLoadingMeetings] = useState(true);
+
+    const fetchMeetings = async () => {
+        if (!user?.id) return;
+        try {
+            const res = await fetch(`/api/meetings?userId=${user.id}`);
+            if (res.ok) {
+                const data = await res.json();
+                setMeetings(data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch meetings:", error);
+            toast.error("Failed to load meetings");
+        } finally {
+            setLoadingMeetings(false);
+        }
+    };
 
     useEffect(() => {
         const timer = setTimeout(() => {
             if (!useAuthStore.getState().isAuthenticated) {
                 router.push("/");
+            } else {
+                fetchMeetings();
             }
         }, 100);
         return () => clearTimeout(timer);
-    }, [router]);
+    }, [router, user?.id]);
 
     const handleJoinMeeting = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -42,6 +63,7 @@ export default function DashboardPage() {
 
             toast.success(data.message);
             setMeetLink("");
+            fetchMeetings();
         } catch (error: any) {
             toast.error(error.message);
         } finally {
@@ -135,15 +157,45 @@ export default function DashboardPage() {
                             </div>
                         </div>
 
-                        <div className="flex flex-col items-center justify-center h-[300px] text-center border-2 border-dashed border-white/5 rounded-xl">
-                            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                                <Video className="w-8 h-8 text-gray-600" />
+                        {loadingMeetings ? (
+                            <div className="flex justify-center py-8">
+                                <div className="animate-spin h-8 w-8 border-4 border-[#667eea] border-t-transparent rounded-full"></div>
                             </div>
-                            <h3 className="text-lg font-medium text-gray-300">No meetings recorded yet</h3>
-                            <p className="text-gray-500 max-w-xs mt-2 text-sm">
-                                Paste a meeting link above to create your first meeting summary.
-                            </p>
-                        </div>
+                        ) : meetings.length > 0 ? (
+                            <div className="space-y-4">
+                                {meetings.map((meeting) => (
+                                    <div key={meeting.id} className="p-4 bg-white/5 rounded-xl border border-white/5 hover:border-white/10 transition-all">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <h4 className="font-medium text-white mb-1 truncate max-w-[200px] sm:max-w-md" title={meeting.meetLink}>
+                                                    {meeting.meetLink}
+                                                </h4>
+                                                <p className="text-xs text-gray-400">
+                                                    {new Date(meeting.createdAt).toLocaleString()}
+                                                </p>
+                                            </div>
+                                            <span className={`px-2 py-1 text-xs font-semibold rounded-full 
+                                                ${meeting.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' :
+                                                    meeting.status === 'FAILED' ? 'bg-red-500/20 text-red-400' :
+                                                        meeting.status === 'PROCESSING' ? 'bg-blue-500/20 text-blue-400' :
+                                                            'bg-yellow-500/20 text-yellow-400'}`}>
+                                                {meeting.status}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-[300px] text-center border-2 border-dashed border-white/5 rounded-xl">
+                                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                                    <Video className="w-8 h-8 text-gray-600" />
+                                </div>
+                                <h3 className="text-lg font-medium text-gray-300">No meetings recorded yet</h3>
+                                <p className="text-gray-500 max-w-xs mt-2 text-sm">
+                                    Paste a meeting link above to create your first meeting summary.
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </motion.section>
 
