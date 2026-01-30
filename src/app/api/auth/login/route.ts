@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { loginSchema } from "@/lib/validations"
+import { signToken } from "@/lib/auth"
 import { ZodError } from "zod"
 
 export const dynamic = "force-dynamic"
@@ -10,7 +11,6 @@ export async function POST(request: Request) {
     try {
         const body = await request.json()
 
-        // Validate request body with Zod
         const validatedData = loginSchema.parse(body)
         const { email, password } = validatedData
 
@@ -34,13 +34,31 @@ export async function POST(request: Request) {
             )
         }
 
-        return NextResponse.json(
+        const token = signToken({
+            userId: user.id,
+            email: user.email,
+            name: user.name || "",
+        })
+
+        const response = NextResponse.json(
             {
                 message: "Login successful",
                 user: { id: user.id, email: user.email, name: user.name },
             },
             { status: 200 }
         )
+
+        response.cookies.set({
+            name: "auth-token",
+            value: token,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 60 * 60 * 24 * 7, // 7 days
+            path: "/",
+        })
+
+        return response
     } catch (error) {
         if (error instanceof ZodError) {
             return NextResponse.json(

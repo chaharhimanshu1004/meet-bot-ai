@@ -13,3 +13,15 @@ export const signupSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>
 export type SignupInput = z.infer<typeof signupSchema>
+
+export const joinMeetingSchema = z.object({
+    meetLink: z
+        .string()
+        .regex(
+            /^https?:\/\/(meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}|meet\.google\.com\/[a-z0-9-]+)$/,
+            "Invalid Google Meet URL"
+        ),
+    userId: z.string().cuid("Invalid User ID"),
+})
+
+export type JoinMeetingInput = z.infer<typeof joinMeetingSchema>

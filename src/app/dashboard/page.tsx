@@ -24,20 +24,40 @@ export default function DashboardPage() {
 
     const handleJoinMeeting = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!meetLink) return;
+        if (!meetLink || !user) return;
 
         setLoading(true);
-        setTimeout(() => {
-            setLoading(false);
-            toast.success("Bot is joining the meeting...");
+        try {
+            const res = await fetch("/api/meetings/join", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ meetLink, userId: user.id }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || "Failed to join meeting");
+            }
+
+            toast.success(data.message);
             setMeetLink("");
-        }, 1500);
+        } catch (error: any) {
+            toast.error(error.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleLogout = () => {
-        logout();
-        router.push("/");
-        toast.success("Logged out successfully");
+    const handleLogout = async () => {
+        try {
+            await fetch("/api/auth/logout", { method: "POST" });
+            logout();
+            router.push("/");
+            toast.success("Logged out successfully");
+        } catch (error) {
+            console.error("Logout failed", error);
+        }
     };
 
     if (!user) return null;
