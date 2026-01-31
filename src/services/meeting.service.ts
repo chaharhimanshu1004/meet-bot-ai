@@ -18,4 +18,18 @@ export class MeetingService {
             throw new Error("Failed to fetch meetings");
         }
     }
+
+    static async getMeetingById(meetingId: string): Promise<Meeting | null> {
+        try {
+            const meeting = await prisma.meeting.findUnique({
+                where: {
+                    id: meetingId,
+                },
+            });
+            return meeting;
+        } catch (error) {
+            console.error("Error fetching meeting details:", error);
+            throw new Error("Failed to fetch meeting details");
+        }
+    }
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { LogOut, Video, Search } from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -164,25 +165,27 @@ export default function DashboardPage() {
                         ) : meetings.length > 0 ? (
                             <div className="space-y-4">
                                 {meetings.map((meeting) => (
-                                    <div key={meeting.id} className="p-4 bg-white/5 rounded-xl border border-white/5 hover:border-white/10 transition-all">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <h4 className="font-medium text-white mb-1 truncate max-w-[200px] sm:max-w-md" title={meeting.meetLink}>
-                                                    {meeting.meetLink}
-                                                </h4>
-                                                <p className="text-xs text-gray-400">
-                                                    {new Date(meeting.createdAt).toLocaleString()}
-                                                </p>
+                                    <Link key={meeting.id} href={`/meetings/${meeting.id}`} className="block">
+                                        <div className="p-4 bg-white/5 rounded-xl border border-white/5 hover:border-white/10 hover:bg-white/10 transition-all cursor-pointer">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <h4 className="font-medium text-white mb-1 truncate max-w-[200px] sm:max-w-md" title={meeting.meetLink}>
+                                                        {meeting.meetLink}
+                                                    </h4>
+                                                    <p className="text-xs text-gray-400">
+                                                        {new Date(meeting.createdAt).toLocaleString()}
+                                                    </p>
+                                                </div>
+                                                <span className={`px-2 py-1 text-xs font-semibold rounded-full 
+                                                    ${meeting.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' :
+                                                        meeting.status === 'FAILED' ? 'bg-red-500/20 text-red-400' :
+                                                            meeting.status === 'PROCESSING' ? 'bg-blue-500/20 text-blue-400' :
+                                                                'bg-yellow-500/20 text-yellow-400'}`}>
+                                                    {meeting.status}
+                                                </span>
                                             </div>
-                                            <span className={`px-2 py-1 text-xs font-semibold rounded-full 
-                                                ${meeting.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' :
-                                                    meeting.status === 'FAILED' ? 'bg-red-500/20 text-red-400' :
-                                                        meeting.status === 'PROCESSING' ? 'bg-blue-500/20 text-blue-400' :
-                                                            'bg-yellow-500/20 text-yellow-400'}`}>
-                                                {meeting.status}
-                                            </span>
                                         </div>
-                                    </div>
+                                    </Link>
                                 ))}
                             </div>
                         ) : (
